@@ -20,7 +20,7 @@ W = 64
 SCALE = 2
 OUT = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "src", "main", "resources", "assets", "aynthor_secondscreen_v1_21", "icon.png",
+    "src", "main", "resources", "assets", "aynthor_secondscreen", "icon.png",
 )
 
 CLEAR = (0, 0, 0, 0)

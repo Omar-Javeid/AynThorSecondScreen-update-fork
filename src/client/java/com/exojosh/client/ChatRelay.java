@@ -1,12 +1,12 @@
 package com.exojosh.client;
 
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.StringVisitable;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.StringHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayDeque;
@@ -21,7 +21,7 @@ import java.util.Optional;
  *
  * <h2>Receiving</h2>
  * Hooks Fabric's {@code ClientReceiveMessageEvents} rather than mixing into
- * {@code ChatHud.addMessage}: the events fire at exactly the point vanilla
+ * vanilla chat rendering: the events fire at exactly the point vanilla
  * decides a message is going to be shown, so anything another mod suppresses
  * never reaches the second screen either.
  *
@@ -61,8 +61,8 @@ import java.util.Optional;
 public final class ChatRelay {
 
     /**
-     * How many messages are kept for a newly-connected app. Vanilla's ChatHud
-     * keeps the same number (its MAX_MESSAGES), so the second screen shows the
+     * How many messages are kept for a newly-connected app. Vanilla chat keeps
+     * the same number (MAX_MESSAGES), so the second screen shows the
      * same amount of history the top screen would.
      *
      * The backlog is why closing and reopening the companion app mid-session
@@ -108,8 +108,8 @@ public final class ChatRelay {
 
     /**
      * Drops the backlog. Called when the player leaves a world, matching
-     * vanilla — {@code ChatHud} is cleared on disconnect, so holding it here
-     * would show one world's conversation over the top of the next one's.
+     * holding it here would show one world's conversation over the top of the
+     * next one's.
      */
     public static void clearHistory() {
         synchronized (HISTORY) {
@@ -121,27 +121,27 @@ public final class ChatRelay {
      * Sends a line of chat as the player.
      *
      * Mirrors {@code ChatScreen}: the text is normalised the way the game's own
-     * chat box normalises it (trimmed, runs of whitespace collapsed, truncated
+     * chat input normalises it (trimmed, runs of whitespace collapsed, truncated
      * to the protocol's limit), and a leading {@code /} routes it to
-     * {@code sendChatCommand} rather than {@code sendChatMessage}. That split
+     * {@code sendCommand} rather than {@code sendChat}. That split
      * matters -- commands get their arguments signed and parsed through the
      * client's dispatcher, and sending "/tp …" as a chat message would just say
      * it out loud.
      */
-    public static void send(MinecraftClient client, String rawMessage) {
+    public static void send(Minecraft client, String rawMessage) {
         if (client.player == null) return;
 
-        String message = StringHelper.truncateChat(StringUtils.normalizeSpace(rawMessage.trim()));
+        String message = StringUtil.trimChatMessage(StringUtils.normalizeSpace(rawMessage.trim()));
         if (message.isEmpty()) return;
 
         if (message.startsWith("/")) {
-            client.player.networkHandler.sendChatCommand(message.substring(1));
+            client.player.connection.sendCommand(message.substring(1));
         } else {
-            client.player.networkHandler.sendChatMessage(message);
+            client.player.connection.sendChat(message);
         }
     }
 
-    private static void relay(Text message) {
+    private static void relay(Component message) {
         List<Segment> segments = flatten(message);
         if (segments.isEmpty()) return;
 
@@ -158,9 +158,9 @@ public final class ChatRelay {
     }
 
     /**
-     * Flattens a Text tree into coloured runs.
+     * Flattens a Component tree into coloured runs.
      *
-     * {@code visit(StyledVisitor, Style.EMPTY)} is what does the real work: it
+     * {@code visit(StyledContentConsumer, Style.EMPTY)} is what does the real work: it
      * walks content and siblings, resolves each node's style against its
      * parent's, and expands translatable content into the player's language.
      * Reading {@code getString()} would give the same characters with none of
@@ -171,13 +171,13 @@ public final class ChatRelay {
      * usually far more fragmented than it looks -- a translated death message
      * can arrive as a dozen same-styled nodes.
      */
-    private static List<Segment> flatten(Text message) {
+    private static List<Segment> flatten(Component message) {
         List<Segment> segments = new ArrayList<>();
 
-        StringVisitable.StyledVisitor<Object> visitor = (style, asString) -> {
+        FormattedText.StyledContentConsumer<Object> visitor = (style, asString) -> {
             if (!asString.isEmpty()) {
                 TextColor color = style.getColor();
-                Integer rgb = color == null ? null : color.getRgb();
+                Integer rgb = color == null ? null : color.getValue();
 
                 if (!segments.isEmpty()) {
                     Segment last = segments.get(segments.size() - 1);

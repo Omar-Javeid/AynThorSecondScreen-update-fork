@@ -1,8 +1,10 @@
-<img align="right" width="128" height="128" alt="AYN Thor Second Screen icon" src="src/main/resources/assets/aynthor_secondscreen_v1_21/icon.png">
+<img align="right" width="128" height="128" alt="AYN Thor Second Screen icon" src="src/main/resources/assets/aynthor_secondscreen/icon.png">
 
 # AYN Thor Second Screen
 
 **Minecraft's HUD, moved to the AYN Thor's bottom screen.**
+
+> **Fork notice:** This is a fork of [AynThorSecondScreen](https://github.com/exojosh/AynThorSecondScreen), updated from Minecraft 1.21.11 to Minecraft Java 26.3.
 
 This Fabric mod hides the vanilla HUD and streams what it was drawing — health,
 hunger, armor, breath, XP, the hotbar, a live map, your open inventory and chat —
@@ -29,6 +31,8 @@ You need **both**. They talk to each other over a loopback socket
 - **Items** — your inventory, or whatever container is open. Tap or drag to move
   items, in `Stack` / `Half` / `Single` / `Move` (shift-click) modes; hold still
   then drag to spread a stack across slots, exactly as dragging does in game.
+  Item icons use direct item/block textures; items that need layered or model
+  rendering may not have an icon until offscreen rendering is restored.
 - **Chat** — the game's chat log in Minecraft's own font, with a keyboard to
   answer it (the app's own, or Android's — your choice in Settings).
 - **Input** — nine buttons, each bound to any key binding the game has, yours or
@@ -45,25 +49,25 @@ pack applies to the second screen too**, with nothing to copy anywhere.
   presentation-category display.
 - **[Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2)** (or
   another PojavLauncher-based launcher).
-- **Minecraft 1.21.11**
-- **Fabric Loader 0.19.3** or newer
-- **[Fabric API](https://modrinth.com/mod/fabric-api)** for 1.21.11 — this mod
+- **Minecraft 26.3**
+- **Fabric Loader 0.20.1** or newer
+- **[Fabric API](https://modrinth.com/mod/fabric-api)** for 26.3 — this mod
   will not load without it.
 
 ## Install
 
 ### 1. The mod, in Zalith Launcher 2
 
-1. Download **`aynthor_secondscreen_v1_21-1.0.0.jar`** from
+1. Download **`aynthor_secondscreen-1.0.0.jar`** from
    [Releases](https://github.com/exojosh/AynThorSecondScreen/releases), and
-   **Fabric API** for 1.21.11 from
-   [Modrinth](https://modrinth.com/mod/fabric-api/versions?g=1.21.11).
-2. In ZL2, create or select a version: pick **1.21.11**, then add
-   **Fabric 0.19.3**.
+   **Fabric API** for 26.3 from
+   [Modrinth](https://modrinth.com/mod/fabric-api/versions?g=26.3).
+2. In ZL2, create or select a version: pick **26.3**, then add
+   **Fabric 0.20.1**.
 3. Open that version's **gear icon** → **Mods**.
 4. Tap **+ / Import**, and add the **Fabric API** jar.
 5. Tap **+ / Import** again, and add
-   **`aynthor_secondscreen_v1_21-1.0.0.jar`**.
+   **`aynthor_secondscreen-1.0.0.jar`**.
 6. Both should now be listed and enabled.
 
 > **Import the right file.** The release is one jar on purpose — the only file
@@ -109,10 +113,10 @@ restarted under it.
 
 ## Building from source
 
-Requires **JDK 21**.
+Requires **JDK 25**.
 
 ```
-./gradlew build          # -> build/libs/aynthor_secondscreen_v1_21-1.0.0.jar
+./gradlew build          # -> build/libs/aynthor_secondscreen-1.0.0.jar
 ./gradlew runClient      # a dev client with the mod loaded
 ```
 

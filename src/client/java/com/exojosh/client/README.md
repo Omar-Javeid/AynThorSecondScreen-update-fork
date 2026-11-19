@@ -1,55 +1,37 @@
-# Thor HUD Bridge — starter mod
+# Client-Side Source Set
 
-## 1. Install (one time)
+This directory contains all the client-only Java sources for the AYN Thor Second Screen mod.
+The project uses Fabric Loom's `splitEnvironmentSourceSets()`, so client code lives here
+separate from the common (`src/main`) source set.
 
-- JDK 21 (Eclipse Temurin): https://adoptium.net
-- Git
-- VS Code extensions: "Extension Pack for Java", "Gradle for Java" (`vscjava.vscode-gradle`)
+## Package structure
 
-## 2. Generate the actual project scaffold
+All client classes live under `com.exojosh.client`:
 
-Don't hand-write `build.gradle` / the Gradle wrapper — go to
-https://fabricmc.net/develop/template, pick a recent Minecraft version (1.21.x)
-and Loader, tick "Fabric API," generate, download, unzip, `code .` into it.
+- **`ThorHudClient`** — `ClientModInitializer`; installs HUD wrappers, starts the socket server, and drives the tick loop.
+- **`HudState`** — snapshot record of one tick's HUD state (health, hunger, armor, hotbar, etc.).
+- **`HudStateServer`** — owns the `ServerSocket` on `127.0.0.1:48291`; handles client connections and broadcasts.
+- **`GameHudVisibility`** — wraps vanilla HUD elements so the mod decides per-frame whether the game draws them.
+- **`ContainerRelay`** — streams the open container/inventory contents and relays clicks back.
+- **`ChatRelay`** — relays chat messages both ways (game → app and app → game).
+- **`HudAssetCatalog`** — serves HUD textures and GUI chrome to connected clients.
+- **`KeyBindingCatalog`** — enumerates all key bindings for the companion app.
+- **`CommandDispatcher`** — maps action codes to `KeyMapping` presses.
+- **`ItemIconRenderer`** / **`ItemIconResolver`** — resolve item icon textures.
+- **`MapRenderer`** — renders map data for streaming.
+- **`mixin/`** — client-side Mixin classes (`KeyBindingAccessor`, `NativeImageInvoker`, `ExampleClientMixin`).
 
-## 3. Wire in these files
+## Mixins
 
-Copy the three `.java` files from `src/client/java/com/exojosh/thorhud/` into
-the matching path inside the generated project (adjust the package name if
-you picked something other than `com.exojosh.thorhud` in the generator).
+Client mixins are registered in `src/client/resources/aynthor_secondscreen.client.mixins.json`.
 
-In the generated `fabric.mod.json`, add a client entrypoint:
+## Building
 
-```json
-"entrypoints": {
-  "client": ["com.exojosh.thorhud.ThorHudClient"]
-}
-```
-
-## 4. Build and test without any Android code yet
-
-```
-./gradlew runClient
-```
-
-Once the game is running and you've joined a world, from another terminal:
+From the project root:
 
 ```
-nc localhost 48291
+./gradlew build          # compile + package the mod jar
+./gradlew runClient      # launch a dev Minecraft client with the mod loaded
 ```
 
-You should see one line of JSON per tick — health, food, xp, hotbar contents.
-That confirms the HUD-hiding + data pipeline both work before you write a
-single line of Android code.
-
-## Known unknowns to verify before relying on this
-
-- `HudLayerRegistrationCallback` / `VanillaHudElements` class names are from
-  Fabric API's layered-HUD rework and have moved between Fabric API releases.
-  Check the Fabric API version the template generator picked against its
-  javadoc/source before assuming the constants used here still exist.
-- Gson is on the classpath transitively via Minecraft's own dependencies, but
-  if you get a `ClassNotFoundException` for `com.google.gson.Gson`, add
-  `modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"`
-  isn't enough by itself — you may need to explicitly `include`/shade Gson,
-  or just write the ~10 lines of manual JSON serialization instead.
+See the project root `README.md` and `CLAUDE.md` for full details.

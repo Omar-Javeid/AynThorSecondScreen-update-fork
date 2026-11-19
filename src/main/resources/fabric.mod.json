@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "aynthor_secondscreen_v1_21",
+	"id": "aynthor_secondscreen",
 	"version": "${version}",
 	"name": "AYN Thor Second Screen",
 	"description": "Moves Minecraft's HUD to the AYN Thor's bottom screen. Hides the vanilla HUD and streams health, hunger, armor, breath, XP, the hotbar, a live map, the open inventory and chat over a loopback socket to the companion Android app, which draws them with the game's own textures and sends taps, key binds and chat back.",
@@ -13,28 +13,28 @@
 		"issues": "https://github.com/exojosh/AynThorSecondScreen/issues"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/aynthor_secondscreen_v1_21/icon.png",
+	"icon": "assets/aynthor_secondscreen/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.exojosh.Aynthor_secondscreen_v1_21"
+			"com.exojosh.AynthorSecondScreen"
 		],
 		"client": [
-			"com.exojosh.client.Aynthor_secondscreen_v1_21Client",
+			"com.exojosh.client.AynthorSecondScreenClient",
 			"com.exojosh.client.ThorHudClient"
 		]
 	},
 	"mixins": [
-		"aynthor_secondscreen_v1_21.mixins.json",
+		"aynthor_secondscreen.mixins.json",
 		{
-			"config": "aynthor_secondscreen_v1_21.client.mixins.json",
+			"config": "aynthor_secondscreen.client.mixins.json",
 			"environment": "client"
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.19.3",
-		"minecraft": "~1.21.11",
-		"java": ">=21",
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
 		"fabric-api": "*"
 	}
 }

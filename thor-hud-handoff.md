@@ -1,5 +1,7 @@
 # AYN Thor Second-Screen Minecraft HUD — Technical Handoff
 
+> **Historical notice:** This document describes the original project at Minecraft 1.21.11. This repository is now a fork updated to Minecraft Java 26.3 (Fabric Loader 0.20.1, Fabric API 0.166.2+26.3, Java 25, Mojang official names). The protocol and architecture below remain largely valid, but version numbers, mapping names, and some API details are outdated — see `CLAUDE.md` for current information.
+
 **Target device:** AYN Thor (dual-screen Android handheld)
 **Launcher:** Zalith Launcher 2 (PojavLauncher-based)
 **Minecraft:** 1.21.11, Fabric Loader 0.19.3, Fabric API 0.141.5+1.21.11, Yarn mappings 1.21.11+build.6

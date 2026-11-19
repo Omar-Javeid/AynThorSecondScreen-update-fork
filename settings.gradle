@@ -10,4 +10,4 @@ pluginManagement {
 }
 
 // Should match your modid
-rootProject.name = 'aynthor_secondscreen_v1_21'
+rootProject.name = 'aynthor_secondscreen'

@@ -1,7 +1,7 @@
 package com.exojosh.client;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,27 +21,23 @@ import java.util.Optional;
  * just points at the block texture directly. Without this fallback, every
  * plain block in the hotbar comes back with no icon.
  *
- * First-pass limitation: this reads the raw base texture file, not a fully
- * composited rendered icon. Items with tinted/layered rendering (dyed
- * leather armor, potions, spawn eggs) or blocks whose item icon isn't a
- * simple single texture (e.g. some 3D-modeled blocks) won't be fully
- * accurate -- getting the exact rendered pixels would mean rendering
- * through the real GUI render pipeline and reading back a framebuffer,
- * meaningfully more code (and, per investigation, not straightforward in
- * 1.21.11 -- GuiRenderer's draw flush is hardwired to the main window
- * framebuffer, not parameterizable to an offscreen target). Fine starting
- * point for the common cases; revisit if specific items still show blank
- * or wrong.
+ * This reads the raw base texture file, not a fully composited rendered icon.
+ * Minecraft 26.3 routes GUI items through a submit-node pipeline, so this
+ * remains a texture fallback rather than a model render. Items with
+ * tinted/layered rendering (dyed leather armor, potions, spawn eggs) or blocks
+ * whose item icon isn't a simple single texture (e.g. some 3D-modeled blocks)
+ * won't be fully accurate. Getting the exact rendered pixels requires a
+ * supported isolated render route through the GUI pipeline; see the current
+ * limitation documented in CLAUDE.md. Fine for common single-texture cases;
+ * revisit when that route is available.
  *
- * NOTE: Identifier lives at net.minecraft.util.Identifier for this Yarn
- * version (confirmed against what already compiles elsewhere in this
- * project) -- getResourceManager()/Resource.getInputStream() are still my
- * best recollection, verify with Ctrl+Space if this doesn't compile clean.
+ * Resource lookup uses Minecraft's active resource manager, including resource
+ * pack overrides.
  */
 public class ItemIconResolver {
 
     public static Optional<String> resolveBase64Png(String itemId) {
-        Identifier item = Identifier.of(itemId);
+        Identifier item = Identifier.parse(itemId);
 
         Optional<String> fromItemFolder = tryTexturePath(item, "item");
         if (fromItemFolder.isPresent()) return fromItemFolder;
@@ -51,14 +47,14 @@ public class ItemIconResolver {
 
     private static Optional<String> tryTexturePath(Identifier item, String folder) {
         try {
-            Identifier texture = Identifier.of(item.getNamespace(), "textures/" + folder + "/" + item.getPath() + ".png");
+            Identifier texture = Identifier.fromNamespaceAndPath(item.getNamespace(), "textures/" + folder + "/" + item.getPath() + ".png");
 
-            var resourceOpt = MinecraftClient.getInstance().getResourceManager().getResource(texture);
+            var resourceOpt = Minecraft.getInstance().getResourceManager().getResource(texture);
             if (resourceOpt.isEmpty()) {
                 return Optional.empty();
             }
 
-            try (InputStream in = resourceOpt.get().getInputStream()) {
+            try (InputStream in = resourceOpt.get().open()) {
                 byte[] bytes = in.readAllBytes();
                 return Optional.of(Base64.getEncoder().encodeToString(bytes));
             }
